@@ -33,7 +33,6 @@ device = torch.device('cuda' if use_cuda else 'cpu')
 parser = argparse.ArgumentParser(description='PyTorch VGG Classifier Testing')
 parser.add_argument('--checkpoint', default='./checkpoint/checkpoint.pth', help='checkpoint file path')
 parser.add_argument('--root', default='/media/voyager/ssd-ext4/industry/', help='dataset root path')
-parser.add_argument('--output', default='./output', help='output path')
 flags = parser.parse_args()
 
 # data

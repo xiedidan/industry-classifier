@@ -23,6 +23,7 @@ class SimpleDataset(Dataset):
 
         if (self.phase == 'train') or (self.phase == 'val'):
             classes = os.listdir(os.path.join(self.root, self.phase))
+            classes = classes.sort()
             self.num_classes = len(classes)
 
             for item in classes:
@@ -30,6 +31,7 @@ class SimpleDataset(Dataset):
 
                 pics = os.listdir(class_path)
                 pic_paths = [os.path.join(class_path, pic) for pic in pics]
+                pic_paths = pic_paths.sort()
                 self.samples.append([(pic_path, int(item)) for pic_path in pic_paths])
             
             # for data balance between classes
