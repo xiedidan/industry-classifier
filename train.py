@@ -26,7 +26,7 @@ pretrained = False
 size = 255
 
 start_epoch = 0
-batch_size = 32
+batch_size = 4
 num_workers = 4
 best_loss = float('inf')
 
@@ -180,6 +180,7 @@ def val(epoch):
             best_loss = val_loss
 
 # main loop
-for epoch in range(start_epoch, flags.end_epoch):
-    train(epoch)
-    val(epoch)
+if __name__ == '__main__':
+    for epoch in range(start_epoch, flags.end_epoch):
+        train(epoch)
+        val(epoch)

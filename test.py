@@ -86,4 +86,5 @@ def test():
             print('\nbatch: {}\noutput: {}\ngt: {}'.format(batch_index, output, gts))
 
 # main
-test()
+if __name__ == '__main__':
+    test()
