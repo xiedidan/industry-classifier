@@ -23,7 +23,7 @@ class SimpleDataset(Dataset):
 
         if (self.phase == 'train') or (self.phase == 'val'):
             classes = os.listdir(os.path.join(self.root, self.phase))
-            classes = classes.sort()
+            classes.sort()
             self.num_classes = len(classes)
 
             for item in classes:
@@ -31,28 +31,37 @@ class SimpleDataset(Dataset):
 
                 pics = os.listdir(class_path)
                 pic_paths = [os.path.join(class_path, pic) for pic in pics]
-                pic_paths = pic_paths.sort()
+                pic_paths.sort()
                 self.samples.append([(pic_path, int(item)) for pic_path in pic_paths])
             
             # for data balance between classes
             class_counts = [len(class_sample) for class_sample in self.samples]
-            class_counts = class_counts.sort()
+            class_counts.sort()
             self.max_class_count = class_counts[-1]
             
             self.total_len = self.max_class_count * self.num_classes
         else: # test
-            pics = os.listdir(os.path.join(self.root, self.phase))
+            classes = os.listdir(os.path.join(self.root, self.phase))
+            classes.sort()
 
-            self.total_len = len(pics)
-            self.samples = [os.path.join(self.root, self.phase, pic) for pic in pics]
+            for item in classes:
+                class_path = os.path.join(self.root, self.phase, item)
+
+                pics = os.listdir(class_path)
+                pic_paths = [os.path.join(class_path, pic) for pic in pics]
+                pic_paths.sort()
+
+                self.samples.append([(pic_path, int(item)) for pic_path in pic_paths])
+                self.total_len += len(pic_paths)
 
     def __len__(self):
         return self.total_len
 
     def __getitem__(self, index):
         if (self.phase == 'train') or (self.phase == 'val'):
-            class_index = (index + 1) / self.max_class_count
-            item_index = ((index + 1) % self.max_class_count) % len(self.samples[class_index])
+            class_index = index // self.max_class_count
+            item_index = (index % self.max_class_count) % len(self.samples[class_index])
+
             image_path, gt = self.samples[class_index][item_index]
 
             image = Image.open(image_path)
@@ -62,9 +71,20 @@ class SimpleDataset(Dataset):
 
             return image, gt
         else: # test
-            image = self.samples[index]
+            total_count = 0
 
-            if self.transform is not None:
-                image = self.transform(image)
+            for class_index, item in enumerate(self.samples):
+                if total_count <= index < total_count + len(item):
+                    item_index = index - total_count
 
-            return image
+                    sample = item[item_index]
+                    image_path, gt = sample
+
+                    image = Image.open(image_path)
+
+                    if self.transform is not None:
+                        image = self.transform(image)
+
+                    return image, gt
+                else:
+                    total_count += len(item)

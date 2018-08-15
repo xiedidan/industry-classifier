@@ -21,13 +21,14 @@ from datasets.simple import *
 
 # config
 num_classes = 2
-size = 512
+size = 255
 
-batch_size = 128
+batch_size = 8
 num_workers = 4
 
 use_cuda = torch.cuda.is_available()
 device = torch.device('cuda' if use_cuda else 'cpu')
+# device = 'cpu'
 
 # arg
 parser = argparse.ArgumentParser(description='PyTorch VGG Classifier Testing')
@@ -37,7 +38,7 @@ flags = parser.parse_args()
 
 # data
 testTransform = transforms.Compose([
-    transforms.Resize(size),
+    transforms.Resize((size, size)),
     transforms.ToTensor()
 ])
 
@@ -55,10 +56,11 @@ testLoader = DataLoader(
 )
 
 # model
-model = models.VGG.vgg16_bn(
+model = models.vgg16_bn(
     False,
     num_classes=num_classes
 )
+model.to(device)
 
 checkpoint = torch.load(flags.checkpoint)
 model.load_state_dict(checkpoint['net'])
@@ -68,18 +70,20 @@ def test():
     with torch.no_grad():
         model.eval()
 
-        for batch_index, images in enumerate(testLoader):
-            images.to(device)
+        for batch_index, samples in enumerate(testLoader):
+            images, gts = samples
+
+            images = images.to(device)
 
             output = model(images)
-            output = F.softmax(output)
+            output = F.softmax(output, dim=len(output.size())-1)
             output = torch.argmax(
                 output,
                 dim=len(output.size())-1,
                 keepdim=False
             )
 
-            print('batch: {}, output: {}'.format(batch_index, output))
+            print('\nbatch: {}\noutput: {}\ngt: {}'.format(batch_index, output, gts))
 
 # main
 test()
