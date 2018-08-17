@@ -18,6 +18,7 @@ import torchvision.models as models
 import torchvision.transforms as transforms
 
 from datasets.simple import *
+from vgg import *
 
 # config
 num_classes = 2
@@ -27,8 +28,8 @@ batch_size = 8
 num_workers = 4
 
 use_cuda = torch.cuda.is_available()
-device = torch.device('cuda' if use_cuda else 'cpu')
-# device = 'cpu'
+# device = torch.device('cuda' if use_cuda else 'cpu')
+device = 'cpu'
 
 # arg
 parser = argparse.ArgumentParser(description='PyTorch VGG Classifier Testing')
@@ -56,14 +57,15 @@ testLoader = DataLoader(
 )
 
 # model
-model = models.vgg16_bn(
+model = vgg16_bn(
     False,
     num_classes=num_classes
 )
-model.to(device)
 
 checkpoint = torch.load(flags.checkpoint)
 model.load_state_dict(checkpoint['net'])
+
+model.to(device)
 
 # pipeline
 def test():

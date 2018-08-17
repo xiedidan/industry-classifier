@@ -19,6 +19,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 
 from datasets.simple import *
+from vgg import *
 
 # config
 num_classes = 2
@@ -26,7 +27,7 @@ pretrained = False
 size = 255
 
 start_epoch = 0
-batch_size = 4
+batch_size = 32
 num_workers = 4
 best_loss = float('inf')
 
@@ -85,7 +86,7 @@ valLoader = DataLoader(
 )
 
 # model
-model = models.vgg16_bn(
+model = vgg16_bn(
     pretrained,
     num_classes=num_classes
 )
