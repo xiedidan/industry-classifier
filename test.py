@@ -36,7 +36,6 @@ device = torch.device('cuda:0' if use_cuda else 'cpu')
 parser = argparse.ArgumentParser(description='PyTorch VGG Classifier Testing')
 parser.add_argument('--checkpoint', default='./checkpoint/checkpoint.pth', help='checkpoint file path')
 parser.add_argument('--root', default='/media/voyager/ssd-ext4/industry/', help='dataset root path')
-parser.add_argument('--lock_feature', action='store_true', help='lock vgg featrue layers')
 flags = parser.parse_args()
 
 # data
