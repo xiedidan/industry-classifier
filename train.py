@@ -23,7 +23,7 @@ from vgg import *
 
 # config
 num_classes = 2
-pretrained = False
+pretrained = False # keep this to be false, we'll load weights manually
 size = 255
 
 start_epoch = 0
@@ -35,6 +35,8 @@ best_loss = float('inf')
 parser = argparse.ArgumentParser(description='PyTorch VGG Classifier Training')
 parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
 parser.add_argument('--end_epoch', default=200, type=int, help='epcoh to stop training')
+parser.add_argument('--transfer', action='store_true', help='use vgg pretrained feature layers for transfer learning')
+parser.add_argument('--lock_feature', action='store_true', help='lock vgg featrue layers')
 parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
 parser.add_argument('--checkpoint', default='./checkpoint/checkpoint.pth', help='checkpoint file path')
 parser.add_argument('--root', default='/media/voyager/ssd-ext4/industry/', help='dataset root path')
@@ -91,6 +93,25 @@ model = vgg16_bn(
     num_classes=num_classes
 )
 
+training_parameters = model.parameters()
+
+if (flags.transfer):
+    checkpoint = torch.load(flags.checkpoint)
+    list_cp = list(checkpoint.keys())
+
+    dict_model = model.state_dict().copy()
+    
+    for layer_name in list_cp:
+        if 'features' in layer_name:
+            dict_model[layer_name] = checkpoint[layer_name]
+
+    model.load_state_dict(dict_model)
+
+    if flags.lock_feature:
+        # feature layer count in our network
+        feature_count = 0
+        list_model = list(dict_model.keys())
+
 if (flags.resume):
     checkpoint = torch.load(flags.checkpoint)
 
@@ -102,8 +123,12 @@ model.to(device)
 
 criterion = nn.CrossEntropyLoss()
 
+updating_parameters = model.parameters()
+if flags.lock_feature:
+    updating_parameters = model.classifier.parameters()
+
 optimizer = optim.SGD(
-    model.parameters(),
+    updating_parameters,
     lr=flags.lr,
     momentum=0.9,
     weight_decay=5e-4
@@ -132,7 +157,7 @@ def train(epoch):
         optimizer.step()
 
         train_loss += loss.item()
-        print('Epoch: {}, batch: {}, Sample loss: {}, batch avg loss: {}'.format(
+        print('Epoch: {}, batch: {}, Sample loss: {:.5f}, batch avg loss: {:.5f}'.format(
             epoch,
             batch_index,
             loss.item(),
@@ -173,7 +198,7 @@ def val(epoch):
             if not os.path.isdir('checkpoint'):
                 os.mkdir('checkpoint')
 
-            torch.save(state, './checkpoint/epoch_{}_loss_{}.pth'.format(
+            torch.save(state, './checkpoint/epoch_{:2d}_loss_{}.pth'.format(
                 epoch,
                 val_loss
             ))

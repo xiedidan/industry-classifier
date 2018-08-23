@@ -19,6 +19,7 @@ import torchvision.transforms as transforms
 
 from datasets.simple import *
 from vgg import *
+from plot import *
 
 # config
 num_classes = 2
@@ -28,13 +29,14 @@ batch_size = 8
 num_workers = 4
 
 use_cuda = torch.cuda.is_available()
-# device = torch.device('cuda' if use_cuda else 'cpu')
-device = 'cpu'
+device = torch.device('cuda:0' if use_cuda else 'cpu')
+# device = 'cpu'
 
 # arg
 parser = argparse.ArgumentParser(description='PyTorch VGG Classifier Testing')
 parser.add_argument('--checkpoint', default='./checkpoint/checkpoint.pth', help='checkpoint file path')
 parser.add_argument('--root', default='/media/voyager/ssd-ext4/industry/', help='dataset root path')
+parser.add_argument('--lock_feature', action='store_true', help='lock vgg featrue layers')
 flags = parser.parse_args()
 
 # data
@@ -73,7 +75,7 @@ def test():
         model.eval()
 
         for batch_index, samples in enumerate(testLoader):
-            images, gts = samples
+            image_paths, images, gts = samples
 
             images = images.to(device)
 
@@ -84,6 +86,9 @@ def test():
                 dim=len(output.size())-1,
                 keepdim=False
             )
+
+            # for idx, image_path in enumerate(image_paths):
+                # plot_leakage(image_path, output[idx])
 
             print('\nbatch: {}\noutput: {}\ngt: {}'.format(batch_index, output, gts))
 

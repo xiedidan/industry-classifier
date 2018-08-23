@@ -85,6 +85,6 @@ class SimpleDataset(Dataset):
                     if self.transform is not None:
                         image = self.transform(image)
 
-                    return image, gt
+                    return image_path, image, gt
                 else:
                     total_count += len(item)
