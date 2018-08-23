@@ -198,7 +198,7 @@ def val(epoch):
             if not os.path.isdir('checkpoint'):
                 os.mkdir('checkpoint')
 
-            torch.save(state, './checkpoint/epoch_{:2d}_loss_{}.pth'.format(
+            torch.save(state, './checkpoint/epoch_{:0>4}_loss_{:.6f}.pth'.format(
                 epoch,
                 val_loss
             ))
