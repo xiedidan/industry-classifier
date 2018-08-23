@@ -15,7 +15,8 @@ pip install -r requirements.txt
 ```
 
 ## Datasets
-A simple dataset 
+A simple PyTorch dataset implementation is provided.  
+  
 For training, train and val datasets are needed.  
 After each epoch of training, weights will be saved to checkpoint if val gets better loss than before.  
 For testing, only test dataset is needed.  
